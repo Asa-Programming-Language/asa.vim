@@ -32,7 +32,7 @@ syn match     asaAsync       "\<async\%(\s\|\n\)\@="
 syn keyword   asaKeyword     break
 syn keyword   asaKeyword     box
 syn keyword   asaKeyword     continue
-syn keyword   asaKeyword     crate
+syn keyword   asaKeyword     module
 syn keyword   asaKeyword     cast
 syn keyword   asaKeyword     create
 syn keyword   asaKeyword     destroy
@@ -44,7 +44,7 @@ syn keyword   asaKeyword     macro
 syn keyword   asaKeyword     pub nextgroup=asaPubScope skipwhite skipempty
 syn keyword   asaKeyword     return
 syn keyword   asaKeyword     yield
-syn keyword   asaSuper       super
+syn keyword   asaSpecial       super this
 syn keyword   asaKeyword     where
 syn keyword   asaUnsafeKeyword unsafe
 syn keyword   asaKeyword     use nextgroup=asaModPath skipwhite skipempty
@@ -59,7 +59,7 @@ syn match asaFuncCall /\<[A-Za-z_][A-Za-z0-9_]*\>\ze\s*(/
 
 syn keyword asaPubScopeCrate crate contained
 syn match asaPubScopeDelim /[()]/ contained
-syn match asaPubScope /([^()]*)/ contained contains=asaPubScopeDelim,asaPubScopeCrate,asaSuper,asaModPath,asaModPathSep,asaSelf transparent
+syn match asaPubScope /([^()]*)/ contained contains=asaPubScopeDelim,asaPubScopeCrate,asaSpecial,asaModPath,asaModPathSep,asaSelf transparent
 
 syn keyword   asaExternCrate crate contained nextgroup=asaIdentifier,asaExternCrateString skipwhite skipempty
 " This is to get the `bar` part of `extern crate "foo" as bar;` highlighting.
@@ -81,7 +81,7 @@ syn match asaDelimiter /[(){}\[\]]/
 syn keyword   asaReservedKeyword become do priv typeof unsized abstract virtual final override
 
 " Built-in types {{{2
-syn keyword   asaType        int128 int64 int32 int int16 int8 uint128 uint64 uint32 uint uint16 uint8 char uchar bool double float half string this
+syn keyword   asaType        int128 int64 int32 int int16 int8 uint128 uint64 uint32 uint uint16 uint8 char uchar bool double float half string 
 
 
 " Highlight ; as gray (like comments)
@@ -155,8 +155,13 @@ syn match     asaOperator     display "&&\|||"
 syn match     asaArrowCharacter display "->"
 syn match     asaQuestionMark display "?\([a-zA-Z]\+\)\@!"
 
-syn match     asaCompilerDirective       '\w\(\w\)*!' contains=asaAssert,asaPanic
+"syn match     asaCompilerDirective       '\w\(\w\)*!' contains=asaAssert,asaPanic
 syn match     asaCompilerDirective       '#\w\(\w\)*' contains=asaAssert,asaPanic
+syn match     asaImport                  '#import\w\(\w\)*\s' contains=asaOperator,asaAssert,asaPanic nextgroup=asaModuleName
+"syn match     asaModuleName              '\w.*;' contains=asaAssert,asaPanic,asaOperator
+"syn match asaImport /#import/ contains=asaAssert,asaPanic nextgroup=asaModuleName skipwhite
+"syn match asaModuleName /\%([A-Za-z_][A-Za-z0-9_]*\%(\.[A-Za-z_][A-Za-z0-9_]*\)*\)/ contained skipwhite nextgroup=asaSemicolon
+"syn match asaModuleName "#import.*\;" contained containedin=asaImport
 
 syn match     asaEscapeError   display contained /\\./
 syn match     asaEscape        display contained /\\\([nrt0\\'"]\|x\x\{2}\)/
@@ -344,7 +349,7 @@ hi def link asaUnion         asaStructure
 hi def link asaExistential   asaKeyword
 hi def link asaPubScopeDelim Delimiter
 hi def link asaPubScopeCrate asaKeyword
-hi def link asaSuper         asaKeyword
+hi def link asaSpecial       Special
 hi def link asaUnsafeKeyword Exception
 hi def link asaReservedKeyword Error
 hi def link asaRepeat        Conditional
@@ -369,6 +374,8 @@ hi def link asaCommentDocCodeFence asaCommentLineDoc
 hi def link asaAssert        PreCondit
 hi def link asaPanic         PreCondit
 hi def link asaCompilerDirective         Macro
+"hi def link asaImport        Macro
+hi def link asaModuleName    Macro
 hi def link asaType          Type
 hi def link asaTodo          Todo
 hi def link asaAttribute     PreProc
