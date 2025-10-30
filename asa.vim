@@ -123,7 +123,7 @@ syn keyword asaTrait String ToString
 syn keyword asaTrait Vec
 
 " Other syntax {{{2
-syn keyword   asaSelf        self
+syn keyword   asaSelf        self void
 syn keyword   asaBoolean     true false
 
 
