@@ -10,15 +10,9 @@ endif
 
 " Syntax definitions {{{1
 " Basic keywords {{{2
-syn keyword   asaConditional match if else finally
-syn keyword   asaRepeat loop while 
-" `:syn match` must be used to prioritize highlighting `for` keyword.
-syn match     asaRepeat /\<for\>/
-" Highlight `for` keyword in `impl ... for ... {}` statement. This line must
-" be put after previous `syn match` line to overwrite it.
-syn match     asaKeyword /\%(\<impl\>.\+\)\@<=\<for\>/
-syn keyword   asaRepeat in
-syn keyword   asaTypedef type nextgroup=asaIdentifier skipwhite skipempty
+syn keyword   asaConditional match if else when finally
+syn keyword   asaRepeat loop while foreach for in from
+"syn keyword   asaTypedef type nextgroup=asaIdentifier skipwhite skipempty
 syn keyword   asaStructure struct enum nextgroup=asaIdentifier skipwhite skipempty
 syn keyword   asaUnion union nextgroup=asaIdentifier skipwhite skipempty contained
 syn match asaUnionContextual /\<union\_s\+\%([^[:cntrl:][:space:][:punct:][:digit:]]\|_\)\%([^[:cntrl:][:punct:][:space:]]\|_\)*/ transparent contains=asaUnion
@@ -33,29 +27,38 @@ syn keyword   asaKeyword     break
 syn keyword   asaKeyword     box
 syn keyword   asaKeyword     continue
 syn keyword   asaKeyword     module
-syn keyword   asaKeyword     cast
-syn keyword   asaKeyword     create
-syn keyword   asaKeyword     destroy
-syn keyword   asaKeyword     operator
+syn keyword   asaFunction    cast
+syn keyword   asaFunction    create
+syn keyword   asaFunction    destroy
+syn keyword   asaFunction    operator
+syn keyword   asaKeyword     public
+syn keyword   asaKeyword     private
 syn keyword   asaKeyword     extern nextgroup=asaExternCrate,asaObsoleteExternMod skipwhite skipempty
 "syn keyword   asaKeyword     fn nextgroup=asaFuncName skipwhite skipempty
 syn keyword   asaKeyword     impl let
 syn keyword   asaKeyword     macro
 syn keyword   asaKeyword     pub nextgroup=asaPubScope skipwhite skipempty
+syn keyword   asaKeyword     set
+syn keyword   asaKeyword     get
 syn keyword   asaKeyword     return
+syn keyword   asaKeyword     result
 syn keyword   asaKeyword     yield
-syn keyword   asaSpecial       super this
+syn keyword   asaKeyword     throw
+syn keyword   asaKeyword     throw_caller
+syn keyword   asaKeyword     test
+syn keyword   asaSpecial     super
 syn keyword   asaKeyword     where
 syn keyword   asaUnsafeKeyword unsafe
 syn keyword   asaKeyword     use nextgroup=asaModPath skipwhite skipempty
 " FIXME: Scoped impl's name is also fallen in this category
 syn keyword   asaKeyword     mod trait nextgroup=asaIdentifier skipwhite skipempty
 syn keyword   asaStorage     move exact ref static const
-syn match     asaDefault     /\<default\ze\_s\+\(impl\|fn\|type\|const\)\>/
+syn match     asaDefault     /\<default\ze\_s\+\(impl\|const\)\>/
 syn keyword   asaAwait       await
 syn match     asaKeyword     /\<try\>!\@!/ display
 "syn match asaFuncCall /\<[A-Za-z_][A-Za-z0-9_]*\>\s*(/ containedin=ALL
-syn match asaFuncCall /\<[A-Za-z_][A-Za-z0-9_]*\>\ze\s*(/
+syn match asaFuncCall /\%(\%(::\|:\)\s*\%(\%(const\|ref\|move\|exact\|static\|[&~*]\)\s*\)*\)\@<!\<[A-Za-z_][A-Za-z0-9_]*\>\ze\s*\%(<[^>]*>\)\?\s*(/
+"syn match asaFuncCall /\<[A-Za-z_][A-Za-z0-9_]*\>\ze\s*(/
 
 syn keyword asaPubScopeCrate crate contained
 syn match asaPubScopeDelim /[()]/ contained
@@ -73,57 +76,32 @@ syn match asaFuncName /\v^\s*\zs\w+\ze\s*::/
 
 syn region asaCompilerDirectiveRepeat matchgroup=asaCompilerDirectiveRepeatDelimiters start="$(" end="),\=[*+]" contains=TOP
 syn match asaCompilerDirectiveVariable "$\w\+"
+syn match asaKeyword /\$\(\w\|(\)\@!/
 syn match asaRawIdent "\<r#\h\w*" contains=NONE
 
 syn match asaDelimiter /[(){}\[\]]/
 
 " Reserved (but not yet used) keywords {{{2
-syn keyword   asaReservedKeyword become do priv typeof unsized abstract virtual final override
+syn keyword   asaReservedKeyword become do priv unsized abstract virtual final override
 
 " Built-in types {{{2
-syn keyword   asaType        int128 int64 int32 int int16 int8 uint128 uint64 uint32 uint uint16 uint8 char uchar bool double float half string 
-
+syn keyword   asaType        int128 int64 int32 int int16 int8 uint128 uint64 uint32 uint uint16 uint8 char uchar byte bool double float half float8 float16 float32 float64 float128 string function any list array iterator type map range
 
 " Highlight ; as gray (like comments)
 syn match asaSemicolon /;/
 syn match asaMemberAccess /\./
 syn match asaComma /,/
 
-syn keyword asaTodo contained TODO FIXME XXX NB NOTE SAFETY
-
-" Things from the libstd v1 prelude (src/libstd/prelude/v1.rs) {{{2
-" This section is just straight transformation of the contents of the prelude,
-" to make it easy to update.
+syn keyword asaTodo contained TODO Todo FIXME XXX NB NOTE Note SAFETY
+syn match     asaConstant    /\<_*[A-Z][A-Z0-9_]*\>/
+syn match     asaConstant    /\<_*[A-Z][A-Za-z0-9_]*_[A-Za-z0-9_]*\>/
 
 " Reexported core operators {{{3
 syn keyword   asaTrait       Copy Send Sized Sync
 syn keyword   asaTrait       Drop Fn FnMut FnOnce
 
-" Reexported functions {{{3
-" There’s no point in highlighting these; when one writes drop( or drop::< it
-" gets the same highlighting anyway, and if someone writes `let drop = …;` we
-" don’t really want *that* drop to be highlighted.
-"syn keyword asaFunction drop
-
-" Reexported types and traits {{{3
-syn keyword asaTrait Box
-syn keyword asaTrait ToOwned
-syn keyword asaTrait Clone
-syn keyword asaTrait PartialEq PartialOrd Eq Ord
-syn keyword asaTrait AsRef AsMut Into From
-syn keyword asaTrait Default
-syn keyword asaTrait Iterator Extend IntoIterator
-syn keyword asaTrait DoubleEndedIterator ExactSizeIterator
-syn keyword asaEnum Option
-syn keyword asaEnumVariant Some None
-syn keyword asaEnum Result
-syn keyword asaEnumVariant Ok Err
-syn keyword asaTrait SliceConcatExt
-syn keyword asaTrait String ToString
-syn keyword asaTrait Vec
-
 " Other syntax {{{2
-syn keyword   asaSelf        self void
+syn keyword   asaSelf        this void null default initial
 syn keyword   asaBoolean     true false
 
 
@@ -140,33 +118,51 @@ syn keyword   asaBoolean     true false
 " [:upper:] as it depends upon 'noignorecase'
 "syn match     asaCapsIdent    display "[A-Z]\w\(\w\)*"
 
+syn region    asaAtAttribute matchgroup=asaAtAttributeName start=/@\w\+/ end=/:\|$/ oneline keepend contains=asaAtAttributeParens
+syn region    asaAtAttributeParens matchgroup=asaDelimiter start=/(/ end=/)/ contained transparent contains=TOP,asaAtAttributeParens
 syn match     asaOperator     display "\%(\.\.\|:\|+\|-\|/\|*\|=\|\^\|&\||\|!\|>\|<\|%\)=\?"
 syn match     asaType     /\.\.\./
-" Highlight :: as gray (like comments)
-syn match asaColonColon /::/
+" Highlight :: as gray (like comments) FIXME: This currently does nothing
+syn match     asaColonColon /::/
+syn match     asaTypePrefix  /::\|:/ display nextgroup=asaTypeQualifier,asaTypeSigil,asaRepeat,asaConditional,asaKeyword,asaStorage,asaCustomType skipwhite skipempty
+syn keyword   asaTypeQualifier const ref move exact static contained nextgroup=asaTypeQualifier,asaTypeSigil,asaCustomType skipwhite skipempty
+syn match     asaTypeSigil   /[&~*]/ contained nextgroup=asaTypeQualifier,asaTypeSigil,asaCustomType skipwhite skipempty
+syn match     asaCustomType  /\<\%(\%(struct\|enum\|union\)\>\)\@!\%(_*[A-Z][A-Z0-9_]*\>\)\@![A-Za-z_][A-Za-z0-9_]*\>/ contained
 " This one isn't *quite* right, as we could have binary-& with a reference
 syn match     asaSigil        display /&\s\+[&~@*][^)= \t\r\n]/he=e-1,me=e-1
-syn match     asaSigil        display /[&~@*][^)= \t\r\n]/he=e-1,me=e-1
+syn match     asaSigil        display /[&~][^)= \t\r\n]/he=e-1,me=e-1
+" Treat * as dereference only when it starts a token, not in binary expressions.
+syn match     asaSigil        display /\%(^\|\s\)\@<=\*[^)= \t\r\n]/he=e-1,me=e-1
 " This isn't actually correct; a closure with no arguments can be `|| { }`.
 " Last, because the & in && isn't a sigil
 syn match     asaOperator     display "&&\|||"
 " This is asaArrowCharacter rather than asaArrow for the sake of matchparen,
 " so it skips the ->; see http://stackoverflow.com/a/30309949 for details.
 syn match     asaArrowCharacter display "->"
-syn match     asaQuestionMark display "?\([a-zA-Z]\+\)\@!"
+
+" Template/generic angle brackets: highlight like delimiters when <> follows an identifier directly (no space)
+" Excludes <= and << from being treated as generic open, and >= from being treated as generic close
+syn region asaGenericParams matchgroup=asaGenericDelimiter start=/\%(\w\)\@<=<\ze[^=<]/ end=/>\ze[^=]/ contains=TOP oneline
+syn match     asaQuestionMark display "?"
 
 "syn match     asaCompilerDirective       '\w\(\w\)*!' contains=asaAssert,asaPanic
 syn match     asaCompilerDirective       '#\w\(\w\)*' contains=asaAssert,asaPanic
-syn match     asaImport                  '#import\w\(\w\)*\s' contains=asaOperator,asaAssert,asaPanic nextgroup=asaModuleName
+syn match     asaImport       '#import\s\+\|#use\s\+' contains=asaOperator nextgroup=asaModuleName skipwhite
+syn match     asaModuleName   '[A-Za-z_][A-Za-z0-9_]*\(\.[A-Za-z_][A-Za-z0-9_]*\)*\%(\.\*\)\?' contains=asaImport contained
+"syn match     asaImport                  '#import\w\(\w\)*\s' contains=asaOperator,asaAssert,asaPanic nextgroup=asaModuleName
+"
 "syn match     asaModuleName              '\w.*;' contains=asaAssert,asaPanic,asaOperator
 "syn match asaImport /#import/ contains=asaAssert,asaPanic nextgroup=asaModuleName skipwhite
-"syn match asaModuleName /\%([A-Za-z_][A-Za-z0-9_]*\%(\.[A-Za-z_][A-Za-z0-9_]*\)*\)/ contained skipwhite nextgroup=asaSemicolon
+"syn match asaModuleName /\%([A-Za-z_][A-Za-z0-9_]*\%(\:[A-Za-z_][A-Za-z0-9_]*\)*\)/ contained skipwhite nextgroup=asaSemicolon
 "syn match asaModuleName "#import.*\;" contained containedin=asaImport
 
 syn match     asaEscapeError   display contained /\\./
 syn match     asaEscape        display contained /\\\([nrt0\\'"]\|x\x\{2}\)/
 syn match     asaEscapeUnicode display contained /\\u{\%(\x_*\)\{1,6}}/
 syn match     asaStringContinuation display contained /\\\n\s*/
+syn match     asaFormatStringLiteralBrace display contained /\\[{}]/
+syn region    asaFormatStringExpr matchgroup=asaFormatStringBrace start=+\\\@<!{+ end=+\\\@<!}+ contained contains=TOP,asaFormatStringExpr
+syn region    asaFormatString matchgroup=asaFormatStringDelimiter start=+\%([A-Za-z0-9_]\)\@<!f"+ skip=+\\\\\|\\"+ end=+"+ contains=asaEscape,asaEscapeUnicode,asaEscapeError,asaStringContinuation,asaFormatStringLiteralBrace,asaFormatStringExpr,@Spell
 syn region    asaString      matchgroup=asaStringDelimiter start=+b"+ skip=+\\\\\|\\"+ end=+"+ contains=asaEscape,asaEscapeError,asaStringContinuation
 syn region    asaString      matchgroup=asaStringDelimiter start=+"+ skip=+\\\\\|\\"+ end=+"+ contains=asaEscape,asaEscapeUnicode,asaEscapeError,asaStringContinuation,@Spell
 syn region    asaString      matchgroup=asaStringDelimiter start='b\?r\z(#*\)"' end='"\z1' contains=@Spell
@@ -239,18 +235,6 @@ syn region asaCommentBlockNest         matchgroup=asaCommentBlock         start=
 syn region asaCommentBlockDocNest      matchgroup=asaCommentBlockDoc      start="/\*"                     end="\*/" contains=asaTodo,asaCommentBlockDocNest,@Spell contained transparent
 syn region asaCommentBlockDocNestError matchgroup=asaCommentBlockDocError start="/\*"                     end="\*/" contains=asaTodo,asaCommentBlockDocNestError,@Spell contained transparent
 
-" FIXME: this is a really ugly and not fully correct implementation. Most
-" importantly, a case like ``/* */*`` should have the final ``*`` not being in
-" a comment, but in practice at present it leaves comments open two levels
-" deep. But as long as you stay away from that particular case, I *believe*
-" the highlighting is correct. Due to the way Vim's syntax engine works
-" (greedy for start matches, unlike Asa's tokeniser which is searching for
-" the earliest-starting match, start or end), I believe this cannot be solved.
-" Oh you who would fix it, don't bother with things like duplicating the Block
-" rules and putting ``\*\@<!`` at the start of them; it makes it worse, as
-" then you must deal with cases like ``/*/**/*/``. And don't try making it
-" worse with ``\%(/\@<!\*\)\@<!``, either...
-
 
 " asm! macro {{{2
 syn region asaAsmMacro matchgroup=asaCompilerDirective start="\<asm!\s*(" end=")" contains=asaAsmDirSpec,asaAsmSym,asaAsmConst,asaAsmOptionsGroup,asaComment.*,asaString.*
@@ -306,7 +290,7 @@ if !exists("b:current_syntax_embed")
     "     ```
     "     */
     "
-    " … but I don’t care. Balance of probability, and all that.
+    " but I don’t care. Balance of probability, and all that.
     syn match asaCommentBlockDocStar /^\s*\*\s\?/ contained
     syn match asaCommentLineDocLeader "^\s*//\%(//\@!\|!\)" contained
 endif
@@ -329,6 +313,10 @@ hi def link asaEscapeError   Error
 hi def link asaStringContinuation Special
 hi def link asaString        String
 hi def link asaStringDelimiter String
+hi def link asaFormatString  String
+hi def link asaFormatStringDelimiter asaStringDelimiter
+hi def link asaFormatStringBrace Delimiter
+hi def link asaFormatStringLiteralBrace asaEscape
 hi def link asaCharacterInvalid Error
 hi def link asaCharacterInvalidUnicode asaCharacterInvalid
 hi def link asaCharacter     Character
@@ -374,11 +362,16 @@ hi def link asaCommentDocCodeFence asaCommentLineDoc
 hi def link asaAssert        PreCondit
 hi def link asaPanic         PreCondit
 hi def link asaCompilerDirective         Macro
-"hi def link asaImport        Macro
-hi def link asaModuleName    Macro
+hi def link asaImport        Macro
+hi def link asaModuleName    String
 hi def link asaType          Type
+hi def link asaTypePrefix    asaOperator
+hi def link asaTypeQualifier asaStorage
+hi def link asaTypeSigil     asaSigil
+hi def link asaCustomType    asaType
 hi def link asaTodo          Todo
 hi def link asaAttribute     PreProc
+hi def link asaAtAttributeName   StorageClass
 hi def link asaDerive        PreProc
 hi def link asaDefault       StorageClass
 hi def link asaStorage       StorageClass
@@ -387,13 +380,14 @@ hi def link asaLifetime      Special
 hi def link asaLabel         Label
 hi def link asaExternCrate   asaKeyword
 hi def link asaObsoleteExternMod Error
-hi def link asaQuestionMark  Special
+hi def link asaQuestionMark  Constant
 hi def link asaAsync         asaKeyword
 hi def link asaAwait         asaKeyword
 hi def link asaAsmDirSpec    asaKeyword
 hi def link asaAsmSym        asaKeyword
 hi def link asaAsmOptions    asaKeyword
 hi def link asaAsmOptionsKey asaAttribute
+hi def link asaGenericDelimiter asaDelimiter
 hi def link asaDelimiter Comment
 hi def link asaColonColon Comment
 hi def link asaSemicolon Comment
